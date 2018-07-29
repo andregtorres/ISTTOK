@@ -58,13 +58,17 @@ def getMirnovs(shot_, node=mirnv_corr, correct=True):
         coilNr+=1
         coilData, times, tbs = getSignal(coil, shot_)
         if correct:
-            if node==mirnv_corr:
-                if coilNr in [1,2,4,11]:
-                    data.append(coilData*0.85e-10) #positive polarity
-                else:
-                    data.append(-coilData*0.85e-10) #negative polarity
+            f=100 #correction length for slope calculation
+            slope=0.0
             if node==mirnv:
-                pass
+                slope=np.linspace(np.mean(coilData[0:f]), np.mean(coilData[-f-1:-1]), num=len(coilData))
+            if coilNr in [1,2,4,11]:
+                coilData=(coilData-slope)*0.85e-10 #positive polarity
+            else:
+                coilData=-(coilData-slope)*0.85e-10 #negative polarity
+
+
+        data.append(coilData)
     return times, data
 
 #PLOTS ALL DATA FROM MIRNOVS
@@ -84,8 +88,17 @@ def plotAll(times_, data_, show=True, title=''):
     if show:
         plt.show()
 
+#PLOTS ONE MIRNOV
+def plotMirnov(times_, data_, show=True, title=''):
+    plt.figure()
+    plt.title(title)
+    #ax[-1].ticklabel_format(style='sci',axis='y', scilimits=(0,0))
+    plt.plot(times_*1e-3, data_)
+    if show:
+        plt.show()
+
 if __name__ == "__main__":
     #vertical coils
-    plotAll(*getMirnovs(42952,mirnv_corr,True), show=False, title="Vertical Field Coils")
+    plotAll(*getMirnovs(42952,mirnv,True), show=False, title="Vertical Field Coils")
     #horizontal coils
-    plotAll(*getMirnovs(42966,mirnv_corr,True), show=True, title="Horizontal Field Coils")
+    plotAll(*getMirnovs(42966,mirnv,True), show=True, title="Horizontal Field Coils")
