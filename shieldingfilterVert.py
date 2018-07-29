@@ -4,7 +4,7 @@
 from getMirnov import *
 import scipy.signal as signal
 from scipy.optimize import *
-from shieldingfilter import CSfilter
+from filters import CSfilter
 
 shotnr=42952;
 
