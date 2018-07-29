@@ -15,16 +15,16 @@ vert, times, tbs = getSignal(ch_vert, shotnr )
 
 #slicing
 slice_start=np.where(times==100000)[0][0]
-slice_end=np.where(times==200000)[0][0]
+slice_end=np.where(times==400000)[0][0]
 
 
 #mirnov signals
-times, data = getMirnovs(shotnr,mirnv_corr,True)
+times, data = getMirnovs(shotnr,mirnv,True)
 
 def exponential(x, a, b, c):
     return a*(1.-np.exp(-x / b))+c
 
-guess = [1.88230074e-04,  2.68313919e+04, -1.82439561e-04]
+guess = [5.94e-6,  1.0313919e+05, 0]
 guessM = [[ 0.00018823010565143905 , 26831.390780271355 , -0.0001824395933670592 ],
 [ 0.00045526020482325745 , 27988.340464523386 , -0.0004411626641315281 ],
 [ 0.0008593054691817632 , 20059.108499765076 , -0.0008539245081783592 ],
@@ -40,10 +40,16 @@ guessM = [[ 0.00018823010565143905 , 26831.390780271355 , -0.0001824395933670592
 
 plt.figure()
 coilNr=0
+params=np.zeros([12,7])
+ax=[]
 for coil in data:
     coilNr+=1
+    ax.append( plt.subplot(3, 4, coilNr))
+    ax[-1].set_title("MIRNOV #"+str(coilNr))
+    ax[-1].ticklabel_format(style='sci',axis='y', scilimits=(0,0))
+    plt.plot(times*1e-3, coil)
     #FIT
-    popt, pcov = curve_fit(exponential, times[slice_start:slice_end], coil[slice_start:slice_end], p0=guessM[coilNr-1],  maxfev=50000)
+    popt, pcov = curve_fit(exponential, times[slice_start:slice_end], coil[slice_start:slice_end], p0=guessM[coilNr-1],  maxfev=50000) #guessM[coilNr-1]
     #Calculate R squared
     residuals = coil[slice_start:slice_end] - exponential(times[slice_start:slice_end], *popt)
     #Sum of the residuals squared
@@ -52,16 +58,17 @@ for coil in data:
     ss_tot = np.sum((coil[slice_start:slice_end]-np.mean(coil[slice_start:slice_end]))**2)
     #R-Squared
     Rsq = 1.0 - ss_res/ss_tot
-    ax = plt.subplot(3, 4, coilNr)
-    plt.plot(times, coil)
-    plt.plot(times[slice_start:slice_end], exponential(times[slice_start:slice_end], *popt), label="fit" )
+
+    plt.plot(times[slice_start:slice_end]*1e-3, exponential(times[slice_start:slice_end], *popt), label="fit" )
     #guess=popt  #guess based on last fit
     print "MIRNOV "+str(coilNr)+ " tau: "+str(popt[1]*1e-3)+" ms"+" fc="+str(1./popt[1]/2./np.pi*1e6)+" Hz R2="+str(Rsq)
     filtered=CSfilter(vert,1./popt[1]/2./np.pi, tbs)
-    if popt[0] > 0:
-        scale=max(exponential(times[slice_start:slice_end], *popt))/max(filtered)
-    else:
-        scale=min(exponential(times[slice_start:slice_end], *popt))/max(filtered)
-    plt.plot(times, filtered*scale)
+    scale=(popt[0]+popt[2])/max(filtered)
+    params[coilNr-1]=np.array([popt[0], popt[1], popt[2], 1./popt[1], 1./popt[1]/2./np.pi*1e6, Rsq, scale])
+    plt.plot(times*1e-3, filtered*scale)
 
+print "AVG:"
+print "p0, p1, p2, 1/tau (us^-1), fc (Hz), R2, scale (Vs/A)"
+print np.average(params, axis=0)
+np.savetxt('vertFits.txt', params)
 plt.show()

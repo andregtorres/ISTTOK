@@ -15,10 +15,10 @@ hor, times, tbs = getSignal(ch_hor, shotHor )
 
 #slicing
 slice_start=np.where(times==100000)[0][0]
-slice_end=np.where(times==105000)[0][0]
+slice_end=np.where(times==200000)[0][0]
 
 #mirnov signals
-times, data = getMirnovs(shotHor,mirnv_corr,True)
+times, data = getMirnovs(shotHor,mirnv,True)
 
 def exponential(x, a, b, c):
     return a*(1.-np.exp(-x / b))+c
@@ -37,12 +37,14 @@ guessM = [[ 80.7919370901674 , 6590.632343915145 , -80.79191856826026 ],
 [ -12.559165108129614 , 7164.670256164515 , 12.559155376979342 ],
 [ -156.7688623998181 , 6143.6995925094525 , 156.76885071336318 ]]
 
-plt.figure(3)
+plt.figure()
 coilNr=0
+params=np.zeros([12,7])
+ax=[]
 for coil in data:
     coilNr+=1
-    ax = plt.subplot(3, 4, coilNr)
-    plt.plot(times, coil)
+    ax.append(plt.subplot(3, 4, coilNr))
+    plt.plot(times*1e-3, coil)
     #FIT
     if coilNr not in [5,6,7,8]:
         popt, pcov = curve_fit(exponential, times[slice_start:slice_end], coil[slice_start:slice_end], p0=guessM[coilNr-1],  maxfev=50000)
@@ -54,20 +56,18 @@ for coil in data:
         ss_tot = np.sum((coil[slice_start:slice_end]-np.mean(coil[slice_start:slice_end]))**2)
         #R-Squared
         Rsq = 1.0 - ss_res/ss_tot
-        plt.plot(times[slice_start:slice_end], exponential(times[slice_start:slice_end], *popt), label="fit" )
-        plt.plot(times[slice_start:slice_end], exponential(times[slice_start:slice_end], *guessM[coilNr-1]), label="fit" )
+        plt.plot(times[slice_start:slice_end]*1e-3, exponential(times[slice_start:slice_end], *popt), label="fit" )
         #guess=popt  #guess based on last fit
         #if coilNr == 4: guess[0]=-guess[0]
     #print "[",popt[0],",",popt[1],",",popt[2],"],"
     print "MIRNOV "+str(coilNr)+ " tau: "+str(popt[1]*1e-3)+" ms"+" fc="+str(1./popt[1]/2./np.pi*1e6)+" Hz R2="+str(Rsq)
     filtered=CSfilter(hor,1./popt[1]/2./np.pi, tbs)
+    scale=(popt[0]+popt[2])/max(filtered)
+    params[coilNr-1]=np.array([popt[0], popt[1], popt[2], 1./popt[1], 1./popt[1]/2./np.pi*1e6, Rsq, scale])
+    if coilNr not in [5,6,7,8]: plt.plot(times*1e-3, filtered*scale)
 
-    if popt[0] > 0:
-        scale=max(coil)/max(filtered)
-        #scale=max(exponential(times[slice_start:200000], *popt))/max(filtered)
-    else:
-        scale=min(coil)/max(filtered)
-        #scale=min(exponential(times[slice_start:200000], *popt))/max(filtered)
-    plt.plot(times, filtered*scale)
-
+print "AVG:"
+print "p0, p1, p2, 1/tau (us^-1), fc (Hz), R2, scale (Vs/A)"
+print np.average(params, axis=0)
+np.savetxt('horFits.txt', params)
 plt.show()
