@@ -26,57 +26,39 @@ plt.legend()
 #filter
 coilNr=0
 filteredV=[]
-correctedV=[]
+correctionV=[]
 Vgains=np.array([1.73E-08,3.83E-08,1.62E-08,-2.44E-08,-2.88E-08,-1.67E-08,-1.86E-08,-3.78E-08,-2.28E-08,1.84E-08,2.75E-08,1.45E-08])
 Vfc=np.array([6.36		,7.08		,9.23		,7.08		,6.47		,4.06		,4.35		,6.88		,5.48		,5.73		,5.63		,3.72])
 for mirnov in data:
     coilNr+=1
     filteredV.append(CSfilter(vert,Vfc[coilNr-1]*1e-6, tbs))
-    correctedV.append(mirnov-Vgains[coilNr-1]*filteredV[coilNr-1])
+    correctionV.append(Vgains[coilNr-1]*filteredV[coilNr-1])
 plt.figure()
 plt.plot(times, data[7])
-plt.plot(times, correctedV[7])
+plt.plot(times, data[7]-correctionV[7])
 plt.xlim(60000, 80000)
 
-print (correctedV[0][2000]-data[0][2000])/data[0][2000]
-
 #centroid
-coilNr=0
-Hsum=np.zeros(len(data[0]))
-z=np.zeros(len(data[0]))
-R=np.zeros(len(data[0]))
-HsumV=np.zeros(len(data[0]))
-zV=np.zeros(len(data[0]))
-RV=np.zeros(len(data[0]))
-for coil in data:
-    coilNr+=1
-    angle=345. - 30.*(coilNr-1.)
-    print "coil: " + str(coilNr) + " angle: " + str(angle) + " pos: (" + str(9.35*(np.cos(np.radians(angle)))) + str(9.35*(np.sin(np.radians(angle))))
-    Hsum += coil
-    z += coil*9.35*(np.sin(np.radians(angle)))
-    R += coil*9.35*(np.cos(np.radians(angle)))
-    HsumV += correctedV[coilNr-1]
-    zV += correctedV[coilNr-1]*9.35*(np.sin(np.radians(angle)))
-    RV += correctedV[coilNr-1]*9.35*(np.cos(np.radians(angle)))
-zt=z/Hsum
-Rt=R/Hsum
-ztV=zV/HsumV
-RtV=RV/HsumV
+radius=9.35 #cm
 
-print (ztV[2000]-zt[2000])/zt[2000]
+data=np.asarray(data) #from list to ndarray
+corrected=np.asarray(data-correctionV)
+Hsum=np.sum(data, axis=0)
+Hsum_corr=np.sum(corrected, axis=0)
+angle=345. - 30.*np.arange(12)
+geometryZ=radius*np.sin(np.radians(angle)) #positions
+geometryR=radius*np.cos(np.radians(angle))
+z=np.dot(geometryZ,data)/Hsum
+R=np.dot(geometryR,data)/Hsum
+zV=np.dot(geometryZ,corrected)/Hsum_corr
+RV=np.dot(geometryR,corrected)/Hsum_corr
 
 plt.figure()
-plt.plot(times, zt, label="z")
-plt.plot(times, Rt, label="R")
-plt.plot(times, ztV, label="zV")
-plt.plot(times, RtV, label="RV")
+plt.plot(times, z, label="z")
+plt.plot(times, R, label="R")
+plt.plot(times, zV, label="zV")
+plt.plot(times, RV, label="RV")
 plt.xlim(60000, 80000)
 plt.ylim(-2, 2)
 leg = plt.legend()
-#plt.plot(times, data[2]);
-plt.show()
-
-
-
-
 plt.show()
