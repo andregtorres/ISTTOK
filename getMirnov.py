@@ -50,7 +50,7 @@ ch_vert='MARTE_NODE_IVO3.DataCollection.Channel_092';
 ch_Ip_rog='MARTE_NODE_IVO3.DataCollection.Channel_088';
 ch_chopper='MARTE_NODE_IVO3.DataCollection.Channel_141';
 
-#SAVES MIRNOV DATA IN A MATRIX
+#SAVES MIRNOV DATA IN A LIST OF NP.ARRAYS
 def getMirnovs(shot_, node=mirnv_corr, correct=True):
     coilNr=0
     data=[]
