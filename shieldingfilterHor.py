@@ -44,6 +44,8 @@ ax=[]
 for coil in data:
     coilNr+=1
     ax.append(plt.subplot(3, 4, coilNr))
+    ax[-1].set_title("MIRNOV #"+str(coilNr))
+    ax[-1].ticklabel_format(style='sci',axis='y', scilimits=(0,0))
     plt.plot(times*1e-3, coil)
     #FIT
     if coilNr not in [5,6,7,8]:
