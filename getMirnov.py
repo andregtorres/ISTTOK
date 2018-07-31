@@ -66,8 +66,6 @@ def getMirnovs(shot_, node=mirnv_corr, correct=True):
                 coilData=(coilData-slope)*0.85e-10 #positive polarity
             else:
                 coilData=-(coilData-slope)*0.85e-10 #negative polarity
-
-
         data.append(coilData)
     return times, data
 
