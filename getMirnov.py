@@ -69,6 +69,31 @@ def getMirnovs(shot_, node=mirnv_corr, correct=True):
         data.append(coilData)
     return times, data
 
+#SAVES MIRNOV DATA IN A LIST OF NP.ARRAYS
+def getMirnovs2(shot_, node=mirnv_corr, ADC=False, polarity=True, slope=False):
+    coilNr=0
+    data=[]
+    pol=1.
+    adc_factor=1.
+    if ADC:
+        adc_factor=0.85e-10
+    for coil in node:
+        coilNr+=1
+        #polarity correction
+        if coilNr  not in [1,2,4,11] and polarity:
+            pol=-1.
+        else:
+            pol=1.
+        coilData, times, tbs = getSignal(coil, shot_)
+        #correct slope
+        sl=np.zeros(len(coilData))
+        if slope and node==mirnv:
+            f=100 #correction length for slope calculation
+            sl=np.linspace(np.mean(coilData[0:f]), np.mean(coilData[-f-1:-1]), num=len(coilData))
+        coilData=pol*(coilData-sl)*adc_factor #positive polarity
+        data.append(coilData)
+    return times, data
+
 #PLOTS ALL DATA FROM MIRNOVS
 def plotAll(times_, data_, show=True, title=''):
     plt.figure()
