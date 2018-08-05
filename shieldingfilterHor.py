@@ -37,7 +37,9 @@ guessM = [[ 80.7919370901674 , 6590.632343915145 , -80.79191856826026 ],
 [ -12.559165108129614 , 7164.670256164515 , 12.559155376979342 ],
 [ -156.7688623998181 , 6143.6995925094525 , 156.76885071336318 ]]
 
-plt.figure()
+fig=plt.figure(figsize=(12,8))
+fig.tight_layout()
+fig.subplots_adjust(hspace=0.4)
 coilNr=0
 params=np.zeros([12,7])
 ax=[]
@@ -72,4 +74,5 @@ print "AVG:"
 print "p0, p1, p2, 1/tau (us^-1), fc (Hz), R2, scale (Vs/A)"
 print np.average(params, axis=0)
 np.savetxt('horFits.txt', params)
+plt.savefig("horFits.png", transparent=True, dpi=100)
 plt.show()

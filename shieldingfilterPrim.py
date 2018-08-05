@@ -10,28 +10,29 @@ from filters import CSfilter
 shotnr=43066;
 
 #Coil signals
-prim, times, tbs = getSignal(ch_prim, shotnr )
+prim, timesp, tbs = getSignal(ch_prim, shotnr )
 prim2, times2, tbs = getSignal(ch_prim, 43063 )
 hor, times, tbs = getSignal(ch_hor, shotnr )
-vert, times, tbs = getSignal(ch_vert, shotnr )
+vert, timesv, tbs = getSignal(ch_vert, shotnr )
+
+#mirnov signals
+times, data = getMirnovs(shotnr,mirnv_corr)
+times=times -1000.
 
 #slicing
 slice_start=np.where(times==100000)[0][0]
 slice_end=np.where(times==400000)[0][0]
 
 
-#mirnov signals
-times, data = getMirnovs(shotnr,mirnv,True)
-
 plt.figure()
-plt.plot(times, prim)
+plt.plot(timesp, prim)
 plt.plot(times2, prim2)
 plt.show
 
 def exponential(x, a, b, c):
     return a*(1.-np.exp(-x / b))+c
 
-guess = [5.94e-6,  1.0313919e+05, 0]
+guess = [1.955173996982982436e-03 ,1.914526200241280458e+04, -1.943467011138365992e-03]
 guessM = [[ 0.00018823010565143905 , 26831.390780271355 , -0.0001824395933670592 ],
 [ 0.00045526020482325745 , 27988.340464523386 , -0.0004411626641315281 ],
 [ 0.0008593054691817632 , 20059.108499765076 , -0.0008539245081783592 ],
@@ -45,7 +46,9 @@ guessM = [[ 0.00018823010565143905 , 26831.390780271355 , -0.0001824395933670592
 [ 0.00026508140311219 , 31355.542905561575 , -0.00025524675518042225 ],
 [ 7.352997274425692e-05 , 35438.751251357215 , -6.89680383018832e-05 ]]
 
-plt.figure()
+fig=plt.figure(figsize=(12,8))
+fig.tight_layout()
+fig.subplots_adjust(hspace=0.4)
 coilNr=0
 params=np.zeros([12,7])
 ax=[]
@@ -67,8 +70,8 @@ for coil in data:
     #R-Squared
     Rsq = 1.0 - ss_res/ss_tot
 
-    plt.plot(times[slice_start:slice_end]*1e-3, exponential(times[slice_start:slice_end], *popt), label="fit" )
-    #guess=popt  #guess based on last fit
+    plt.plot(times[slice_start:slice_end]*1e-3, exponential(times[slice_start:slice_end], *popt), label="guess" )
+    guess=popt  #guess based on last fit
     print "MIRNOV "+str(coilNr)+ " tau: "+str(popt[1]*1e-3)+" ms"+" fc="+str(1./popt[1]/2./np.pi*1e6)+" Hz R2="+str(Rsq)
     filtered=CSfilter(prim,1./popt[1]/2./np.pi, tbs)
     scale=(popt[0]+popt[2])/max(filtered)
@@ -79,4 +82,5 @@ print "AVG:"
 print "p0, p1, p2, 1/tau (us^-1), fc (Hz), R2, scale (Vs/A)"
 print np.average(params, axis=0)
 np.savetxt('primFits.txt', params)
+plt.savefig("primPFits.png", transparent=True, dpi=100)
 plt.show()

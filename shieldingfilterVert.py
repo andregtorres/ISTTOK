@@ -18,6 +18,7 @@ slice_start=np.where(times==100000)[0][0]
 slice_end=np.where(times==400000)[0][0]
 
 
+
 #mirnov signals
 times, data = getMirnovs(shotnr,mirnv,True)
 
@@ -38,7 +39,9 @@ guessM = [[ 0.00018823010565143905 , 26831.390780271355 , -0.0001824395933670592
 [ 0.00026508140311219 , 31355.542905561575 , -0.00025524675518042225 ],
 [ 7.352997274425692e-05 , 35438.751251357215 , -6.89680383018832e-05 ]]
 
-plt.figure()
+fig=plt.figure(figsize=(12,8))
+fig.tight_layout()
+fig.subplots_adjust(hspace=0.4)
 coilNr=0
 params=np.zeros([12,7])
 ax=[]
@@ -71,4 +74,5 @@ print "AVG:"
 print "p0, p1, p2, 1/tau (us^-1), fc (Hz), R2, scale (Vs/A)"
 print np.average(params, axis=0)
 np.savetxt('vertFits.txt', params)
+plt.savefig("vertFits.png", transparent=True, dpi=100)
 plt.show()
