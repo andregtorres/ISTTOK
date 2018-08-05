@@ -11,6 +11,8 @@ Hgains=np.array([4.036905791462669659e-08,7.544069073198127677e-08,3.27853209689
 Vfc=np.array([6.36		,7.08		,9.23		,7.08		,6.47		,4.06		,4.35		,6.88		,5.48		,5.73		,5.63		,3.72])
 Pfc=np.array([8.313019851691642259,6.106860538591612375,4.887008770245405920,3.694572564114741997,7.229626404862063538,8.588720809064279038,6.875714847099883009,5.917367134596915434,6.191243890425031537,2.245538136116884687,5.651611285594944967,5.773617831023106994])
 Hfc=np.array([27.07,17.02,9.66,27.57,0.0,0.0,0.0,0.0,26.63,13.42,18.52,29.01])
+for v,p in zip(Vgains,Pgains):
+    print v, p
 
 
 #filter currents
@@ -48,6 +50,9 @@ def getCentroid(data_,correctionV_=np.asarray([[]]),correctionH_=np.asarray([[]]
 
 
 shotNr=43740
+vloop,times5, tbs=getSignal("MARTE_NODE_IVO3.DataCollection.Channel_043",shotNr)
+
+client.searchParametersByName("vloop")
 
 #mirnov signals
 times, data = getMirnovs(shotNr,mirnv_corr,False)
@@ -59,74 +64,92 @@ hor, times, tbs = getSignal(ch_hor, shotNr )
 prim, times, tbs = getSignal(ch_prim, shotNr )
 
 #refernce signals
-density, times, tbs= getSignal("MARTE_NODE_IVO3.DataCollection.Channel_088",shotNr)
+density, times3, tbs= getSignal("MARTE_NODE_IVO3.DataCollection.Channel_089",shotNr)
+ip, times2, tbs= getSignal("MARTE_NODE_IVO3.DataCollection.Channel_088",shotNr)
+ipPP, times4, tbs= getSignal("POST.PROCESSED.IPLASMA",shotNr)
 density_filtered=np.ndarray.flatten(savgol_filter(density,29,5))
 
 #Filter currents
 filteredV, filteredP, filteredH =getCorrections(vert,prim,hor)
 #compute the corrections
 correctionV=(Vgains*filteredV.T).T
-correctionP=(Pgains*filteredP.T).T
+#correctionP=(Pgains*filteredP.T).T
 correctionH=(Hgains*filteredH.T).T
 
-plt.figure()
-plt.plot(times*1e-3, data[2]*1e6, label="Original")
-plt.plot(times*1e-3, (data[2]-correctionV[7])*1e6, label="V PF corrected")
-plt.plot(times*1e-3, (data[2]-correctionP[7])*1e6, label="P PF corrected")
-plt.plot(times*1e-3, (data[2]-correctionH[7])*1e6, label="H PF corrected")
+prim2=[]
+for i in range(12):
+    prim2.append(prim)
+prim2=np.asarray(prim2)
+correctionP=(Pgains*prim2.T).T
+
+
+plt.xlim(00,200)
+plt.grid()
+plt.plot(times*1e-3,correctionV[5])
+
+
+plt.figure(figsize=(12,8))
+plt.plot(times*1e-3, data[5]*1e6, label="Original")
+plt.plot(times*1e-3, (data[5]-correctionV[5])*1e6, label="V PF corrected")
+plt.plot(times*1e-3, (data[5]-correctionP[5])*1e6, label="P PF corrected")
+plt.plot(times*1e-3, (data[5]-correctionH[5])*1e6, label="H PF corrected")
+plt.plot(times*1e-3, (data[5]-correctionH[5]-correctionP[5]-correctionV[5])*1e6, label=" all PF corrected")
+plt.plot(times*1e-3, (data[5]-correctionH[5]+correctionP[5]+correctionV[5])*1e6, label=" all PF corrected ADD")
+
+
 plt.xlabel("Time (ms)")
 plt.ylabel("uV.s")
 plt.title("MIRNOV 3 signal")
 plt.legend()
+plt.savefig("mirnov3_corrections.png", transparent=True, dpi=100)
 
-plt.figure()
-plt.plot(times*1e-3, density)
-plt.plot(times*1e-3, density_filtered)
+plt.figure(figsize=(12,8))
+plt.plot(times3*1e-3, density)
+plt.plot(times3*1e-3, density_filtered)
 plt.title("Interferometer Density")
 plt.xlim(60, 80)
-plt.ylim(3000, 5000)
+#plt.ylim(3000, 5000)
 plt.xlabel("Time (ms)")
 plt.grid()
 
-plt.figure()
+plt.figure(figsize=(12,8))
 plt.plot(times*1e-3, vert, label= "vertical")
 plt.plot(times*1e-3, filteredV[2], label= "v. filter w mirnov 3 params")
+plt.plot(times*1e-3, filteredV[2], label= "v. filter w mirnov 3 params")
+plt.plot(times*1e-3, filteredV[5], label= "v. filter w mirnov 6 params")
 plt.plot(times*1e-3, hor, label= "horizontal")
 plt.plot(times*1e-3, filteredH[2], label= "h. filter w mirnov 3 params")
 plt.plot(times*1e-3, prim, label= "primary")
 plt.plot(times*1e-3, filteredP[2], label= "p. filter w mirnov 3 params")
+plt.plot(times2*1e-3, ip/10., label= "Ip/10")
 plt.xlim(60, 80)
 plt.legend()
 plt.xlabel("Time (ms)")
 plt.ylabel("A")
 plt.title("PF COILS")
+plt.savefig("PFfilters.png", transparent=True, dpi=100)
+
 
 #COMPUTE CENTROID
 R,z=getCentroid(data)
 R_corr,z_corr=getCentroid(data,correctionV,correctionH,correctionP)
+R_corrP,z_corrP=getCentroid(data,-correctionV,correctionH,-correctionP)
 
-plt.figure()
+plt.figure(figsize=(12,8))
 plt.plot(times*1e-3, z, label="z")
 plt.plot(times*1e-3, R, label="R")
 plt.plot(times*1e-3, z_corr, label="z corr.")
 plt.plot(times*1e-3, R_corr, label="R corr.")
+plt.plot(times*1e-3, z_corrP, label="z corr. P")
+plt.plot(times*1e-3, R_corrP, label="R corr. P")
 plt.xlim(60, 80)
-plt.ylim(-2, 2)
+plt.ylim(-2, 5)
 plt.xlabel("Time (ms)")
 plt.ylabel("Displacement (cm)")
 plt.title("Current centroid position")
 plt.grid()
 leg = plt.legend()
-
-#slicing
-slice_start=np.where(times==60000)[0][0]
-slice_end=np.where(times==80000)[0][0]
-decimation=10
-timesS=times[slice_start:slice_end:decimation]
-RS=R[slice_start:slice_end:decimation]
-zS=z[slice_start:slice_end:decimation]
-R_corrS=R_corr[slice_start:slice_end:decimation]
-z_corrS=z_corr[slice_start:slice_end:decimation]
+plt.savefig("centroid_Corrected.pdf", transparent=True, dpi=100)
 
 RLimiter=8.5
 d=np.sqrt(R**2+z**2)
@@ -136,7 +159,7 @@ plasmaRadius_corr=RLimiter-d_corr
 chord_corr=2.*np.sqrt(plasmaRadius_corr**2-R_corr**2)
 chord=2.*np.sqrt(plasmaRadius**2-R**2)
 
-plt.figure()
+plt.figure(figsize=(12,8))
 plt.plot(times*1e-3, chord, label="Original")
 plt.plot(times*1e-3, chord_corr, label="Corrected")
 plt.xlim(60, 80)
@@ -147,13 +170,37 @@ plt.title("Chord Length at R=0")
 plt.grid()
 leg = plt.legend()
 plt.show()
+plt.savefig("chordLength.png", transparent=True, dpi=100)
+
+
+#slicing
+slice_start=np.where(times==60000)[0][0]
+slice_end=np.where(times==80000)[0][0]
+decimation=10
+timesS=times[slice_start:slice_end:decimation]
+RS=R[slice_start:slice_end:decimation]
+zS=z[slice_start:slice_end:decimation]
+R_corrS=R_corr[slice_start:slice_end:decimation]
+z_corrS=z_corr[slice_start:slice_end:decimation]
+plasmaRadius_corrS=plasmaRadius_corr[slice_start:slice_end:decimation]
+plasmaRadiusS=plasmaRadius[slice_start:slice_end:decimation]
+
+RLimiter=8.5
+d=np.sqrt(R**2+z**2)
+plasmaRadius=RLimiter-d
+d_corr=np.sqrt(R_corr**2+z_corr**2)
+plasmaRadius_corr=RLimiter-d_corr
+chord_corr=2.*np.sqrt(plasmaRadius_corr**2-R_corr**2)
+chord=2.*np.sqrt(plasmaRadius**2-R**2)
+
+
 
 #Thanks to:
 #https://brushingupscience.com/2016/06/21/matplotlib-animations-the-easy-way/
 from matplotlib.animation import FuncAnimation
 fig, ax = plt.subplots(figsize=(4, 4))
 limiter = plt.Circle((0, 0), RLimiter, color='k', fill=False)
-plasma_corr = plt.Circle((R_corrS[0], z_corrS[0]), plasmaRadius_corr[0], color='r', fill=False)
+plasma_corr = plt.Circle((R_corrS[0], z_corrS[0]), plasmaRadius_corrS[0], color='r', fill=False)
 ax.add_artist(limiter)
 ax.add_artist(plasma_corr)
 ax.set(xlim=(-9,9), ylim=(-9,9))
@@ -169,7 +216,7 @@ def animate(i):
     scat1.set_offsets(np.c_[RS[i], zS[i]])
     scat2.set_offsets(np.c_[R_corrS[i], z_corrS[i]])
     plasma_corr.remove()
-    plasma_corr = plt.Circle((R_corrS[i], z_corrS[i]), plasmaRadius_corr[i], color='r', fill=False)
+    plasma_corr = plt.Circle((R_corrS[i], z_corrS[i]), plasmaRadius_corrS[i], color='r', fill=False)
     ax.add_artist(plasma_corr)
 anim = FuncAnimation(fig, animate, interval=100, frames=len(timesS)-1, repeat=True ) #fargs=[plasma_corr]
 anim.save('centroid.gif', writer='imagemagick')
