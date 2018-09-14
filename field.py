@@ -34,22 +34,25 @@ def biotsavart(r,z,Rw,zw,I,N=400):
     B=B*mu_0/4./np.pi*I
     return np.sqrt(B[0]**2+B[1]**2), B[2]
 
-'''
+def biotSavartCyl(r,z,Rw,Zw,I):
+    d=np.sqrt((r-Rw)**2+ (z-Zw)**2)
+    B=mu_0/4./np.pi*I/(d**2)
+    alpha=np.arctan2((z-Zw),(r-Rw))
+    Br=B*np.sin(alpha)
+    Bz=B*np.cos(alpha)
+    return Br, Bz
+
 R=np.linspace(20,70)
 Z=np.linspace(-10,10)
-
-Hr=np.zeros(50)
-Hz=np.zeros(50)
+Br=np.zeros(50)
+Bz=np.zeros(50)
 for Rw,Zw, sign in zip([58.,58.,35.,35.],[-7.,7.,-7.,7.],[-1.,-1.,1.,1.]):
     for i in range(50):
-        coilHr, coilHz =biotsavart(R[i]*1e-2, 0.0*1e-2, Rw*1e-2,Zw*1e-2,340) #46.
-        Hr[i]+=sign*coilHr
-        Hz[i]+=sign*coilHz
-#Hr=np.asarray(Hr)
-#Hz=np.asarray(Hz)
+        br,bz=biotSavartCyl(50*1e-2, Z[i]*1e-2, Rw*1e-2,Zw*1e-2,340*sign) #46.
+        Br[i] = Br[i] + br
+        Bz[i] = Bz[i] + bz
 
 import matplotlib.pyplot as plt
-#plt.quiver(R, , Hr, Hz)
-H=Hz**2+Hr**2
-plt.plot(R,Hr)
-'''
+plt.plot(Z,np.sqrt(Br**2+Bz**2)*1000)
+plt.plot(Z,Br*1000)
+plt.plot(Z,Bz*1000)
