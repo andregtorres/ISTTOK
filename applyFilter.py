@@ -73,9 +73,10 @@ density_filtered=np.ndarray.flatten(savgol_filter(density,29,5))
 filteredV, filteredP, filteredH =getCorrections(vert,prim,hor)
 #compute the corrections
 correctionV=(Vgains*filteredV.T).T
-#correctionP=(Pgains*filteredP.T).T
+correctionP2=(Pgains*filteredP.T).T
 correctionH=(Hgains*filteredH.T).T
 
+#no filter on the prim
 prim2=[]
 for i in range(12):
     prim2.append(prim)
@@ -99,9 +100,9 @@ plt.plot(times*1e-3, (data[5]-correctionH[5]+correctionP[5]+correctionV[5])*1e6,
 
 plt.xlabel("Time (ms)")
 plt.ylabel("uV.s")
-plt.title("MIRNOV 3 signal")
+plt.title("MIRNOV 6 signal")
 plt.legend()
-plt.savefig("mirnov3_corrections.png", transparent=True, dpi=100)
+plt.savefig("mirnov6_corrections.png", transparent=True, dpi=100)
 
 plt.figure(figsize=(12,8))
 plt.plot(times3*1e-3, density)
@@ -114,8 +115,6 @@ plt.grid()
 
 plt.figure(figsize=(12,8))
 plt.plot(times*1e-3, vert, label= "vertical")
-plt.plot(times*1e-3, filteredV[2], label= "v. filter w mirnov 3 params")
-plt.plot(times*1e-3, filteredV[2], label= "v. filter w mirnov 3 params")
 plt.plot(times*1e-3, filteredV[5], label= "v. filter w mirnov 6 params")
 plt.plot(times*1e-3, hor, label= "horizontal")
 plt.plot(times*1e-3, filteredH[2], label= "h. filter w mirnov 3 params")
@@ -133,15 +132,15 @@ plt.savefig("PFfilters.png", transparent=True, dpi=100)
 #COMPUTE CENTROID
 R,z=getCentroid(data)
 R_corr,z_corr=getCentroid(data,correctionV,correctionH,correctionP)
-R_corrP,z_corrP=getCentroid(data,-correctionV,correctionH,-correctionP)
+R_corr2,z_corr2=getCentroid(data,correctionV,correctionH,correctionP2)
 
 plt.figure(figsize=(12,8))
 plt.plot(times*1e-3, z, label="z")
 plt.plot(times*1e-3, R, label="R")
 plt.plot(times*1e-3, z_corr, label="z corr.")
 plt.plot(times*1e-3, R_corr, label="R corr.")
-plt.plot(times*1e-3, z_corrP, label="z corr. P")
-plt.plot(times*1e-3, R_corrP, label="R corr. P")
+plt.plot(times*1e-3, R_corr2, label="R corr. filter")
+
 plt.xlim(60, 80)
 plt.ylim(-2, 5)
 plt.xlabel("Time (ms)")
@@ -158,7 +157,7 @@ d_corr=np.sqrt(R_corr**2+z_corr**2)
 plasmaRadius_corr=RLimiter-d_corr
 chord_corr=2.*np.sqrt(plasmaRadius_corr**2-R_corr**2)
 chord=2.*np.sqrt(plasmaRadius**2-R**2)
-
+'''
 plt.figure(figsize=(12,8))
 plt.plot(times*1e-3, chord, label="Original")
 plt.plot(times*1e-3, chord_corr, label="Corrected")
@@ -169,10 +168,9 @@ plt.ylabel("Length (cm)")
 plt.title("Chord Length at R=0")
 plt.grid()
 leg = plt.legend()
-plt.show()
 plt.savefig("chordLength.png", transparent=True, dpi=100)
-
-
+'''
+plt.show()
 #slicing
 slice_start=np.where(times==60000)[0][0]
 slice_end=np.where(times==80000)[0][0]
