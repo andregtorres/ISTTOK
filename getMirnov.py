@@ -63,10 +63,13 @@ def getMirnovs(shot_, node=mirnv_corr, correct=True):
             if node==mirnv:
                 slope=np.linspace(np.mean(coilData[0:f]), np.mean(coilData[-f-1:-1]), num=len(coilData))
             if coilNr in [1,2,4,11]:
-                coilData=(coilData-slope)*0.85e-10 #positive polarity
+                coilData=(coilData-slope) #positive polarity
             else:
-                coilData=-(coilData-slope)*0.85e-10 #negative polarity
-        data.append(coilData)
+                coilData=-(coilData-slope) #negative polarity
+        if shot_ > 44000:     # Check this exact number
+            data.append(coilData * 0.85e-10 /11.0 ) # Return values in V.s units
+        else:
+            data.append(coilData * 0.85e-10 ) # Return values in V.s units
     return times, data
 
 #SAVES MIRNOV DATA IN A LIST OF NP.ARRAYS
@@ -91,7 +94,10 @@ def getMirnovs2(shot_, node=mirnv_corr, ADC=False, polarity=True, slope=False):
             f=100 #correction length for slope calculation
             sl=np.linspace(np.mean(coilData[0:f]), np.mean(coilData[-f-1:-1]), num=len(coilData))
         coilData=pol*(coilData-sl)*adc_factor #positive polarity
-        data.append(coilData)
+        if shot_ > 44000:     # Check this exact number
+            data.append(coilData * 0.85e-10 /11.0 ) # Return values in V.s units
+        else:
+            data.append(coilData * 0.85e-10 ) # Return values in V.s units
     return times, data
 
 #PLOTS ALL DATA FROM MIRNOVS
@@ -121,7 +127,24 @@ def plotMirnov(times_, data_, show=True, title=''):
         plt.show()
 
 if __name__ == "__main__":
-    #vertical coils
-    plotAll(*getMirnovs(42952,mirnv,True), show=False, title="Vertical Field Coils")
     #horizontal coils
     plotAll(*getMirnovs(42966,mirnv,True), show=True, title="Horizontal Field Coils")
+
+'''
+times_old, data_old = getMirnovs(42966,mirnv,True)
+times_new, data_new = getMirnovs(44330,mirnv,True)
+%matplotlib qt4
+n=1
+sty="-"
+for coil_old, coil_new in zip(data_old, data_new):
+    if n>10: sty="+"
+    plt.figure(1)
+    plt.plot(times_old,coil_old, sty, label="c"+str(n))
+    plt.figure(2)
+    plt.plot(times_new,coil_new, sty, label="c"+str(n))
+    n+=1
+plt.figure(1)
+plt.legend()
+plt.figure(2)
+plt.legend()
+'''
