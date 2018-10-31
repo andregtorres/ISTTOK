@@ -67,7 +67,7 @@ def getMirnovs(shot_, node=mirnv_corr, correct=True):
             else:
                 coilData=-(coilData-slope) #negative polarity
         if shot_ > 44000:     # Check this exact number
-            data.append(coilData * 0.85e-10 /11.0 ) # Return values in V.s units
+            data.append(coilData * 0.85e-10 /10.0 ) # Return values in V.s units
         else:
             data.append(coilData * 0.85e-10 ) # Return values in V.s units
     return times, data
