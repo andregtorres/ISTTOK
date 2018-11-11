@@ -67,7 +67,7 @@ for shot, i, ft in zip(shotsV,iV,ftV):
     plt.title ("Pulse "+str(shot)+" - Mirnov flux with optimized Vertical field coil positions")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("plots/OptimV_"+str(shot)+".png")
+    plt.savefig("plots/OptimV_"+str(shot)+".png",dpi=200)
 
 #Horizontal
 for shot, i, ft in zip(shotsH,iH,ftH):
@@ -86,7 +86,7 @@ for shot, i, ft in zip(shotsH,iH,ftH):
     plt.title ("Pulse "+str(shot)+" - Mirnov flux with optimized Horizontal field coil positions")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("plots/OptimH_"+str(shot)+".png")
+    plt.savefig("plots/OptimH_"+str(shot)+".png",dpi=200)
 
 #Primary
 for shot, i, ft in zip(shotsP,iP,ftP):
@@ -105,4 +105,4 @@ for shot, i, ft in zip(shotsP,iP,ftP):
     plt.title ("Pulse "+str(shot)+" - Mirnov flux with optimized Primary coils positions")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("plots/OptimP_"+str(shot)+".png")
+    plt.savefig("plots/OptimP_"+str(shot)+".png", dpi=200)
