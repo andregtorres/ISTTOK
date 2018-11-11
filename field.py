@@ -62,6 +62,31 @@ def getMirnovFlux(Rw_,Zw_,polarity,windings,biotSavart=True):
     Hp=-Hr*np.sin(np.radians(angle))+Hz*np.cos(np.radians(angle))
     return Hp*windings*50*49e-6
 
+def getMirnovFluxCorrected(Rw_,Zw_,polarity,windings,correction,biotSavart=True):
+    #mirnov positions
+    radius=9.35 #cm
+    angle=345. - 30.*np.arange(12)
+    geometryZ=radius*np.sin(np.radians(angle)) #positions of the mirnovs
+    geometryR=radius*np.cos(np.radians(angle))
+    #loop on the mirnovs
+    Hr=np.zeros(len(angle))
+    Hz=np.zeros(len(angle))
+    i=0
+    for r,z in zip(geometryR,geometryZ):
+        #loop on the PFCs
+        for Rw,Zw, sign in zip(Rw_,Zw_,polarity):
+            if biotSavart:
+                coilHr, coilHz= biotsavart((r+46.)*1e-2, z*1e-2, Rw*1e-2,Zw*1e-2,1.0) #46.
+            else:
+                coilHr, coilHz= Hcoil((r+46.)*1e-2, z*1e-2, Rw*1e-2,Zw*1e-2) #46.
+            Hr[i]+=sign*coilHr*correction[0]
+            Hz[i]+=sign*coilHz*correction[1]
+        i+=1
+    Hr=np.asarray(Hr)
+    Hz=np.asarray(Hz)
+    Hp=-Hr*np.sin(np.radians(angle))+Hz*np.cos(np.radians(angle))
+    return Hp*windings*50*49e-6
+
 #get the mirnov flat top value with heaviside shots
 def flatTops (data,from_=4000, to_=6000):
     return np.asarray([np.mean(np.array(i)[from_:to_]) for i in data])
