@@ -71,7 +71,7 @@ for shot, i, ft in zip(shotsV,iV,ftV):
 
 #Horizontal
 for shot, i, ft in zip(shotsH,iH,ftH):
-    H0=getMirnovFlux([58.,58.,35.,35.],[-7.,7.,-7.,7.],[1.,-1.],14,biotSavart=False)*i*1e6
+    H0=getMirnovFlux(originalH[0],originalH[1],[1.,-1.],originalH[2][1],biotSavart=False)*i*1e6
     H1=getMirnovFluxCorrected(optimH1[0],optimH1[1],[1.,-1.],optimH1[2][1],optimH1[3],biotSavart=False)*i*optimH1[2][0]*1e6
     H2=getMirnovFluxCorrected(optimH2[0],optimH2[1],[1.,-1.],optimH2[2][1],optimH2[3],biotSavart=False)*i*optimH2[2][0]*1e6
     H3=getMirnovFluxCorrected(optimH3[0],optimH3[1],[1.,-1.],optimH3[2][1],optimH3[3],biotSavart=False)*i*optimH3[2][0]*1e6
@@ -90,7 +90,7 @@ for shot, i, ft in zip(shotsH,iH,ftH):
 
 #Primary
 for shot, i, ft in zip(shotsP,iP,ftP):
-    P0=getMirnovFlux([58.,58.,35.,35.],[-7.,7.,-7.,7.],[1.,1.],14,biotSavart=False)*i*1e6
+    P0=getMirnovFlux(originalP[0],originalP[1],[1.,1.],originalP[2][1],biotSavart=False)*i*1e6
     P1=getMirnovFluxCorrected(optimP1[0],optimP1[1],[1.,1.],optimP1[2][1],optimP1[3],biotSavart=False)*i*optimP1[2][0]*1e6
     P2=getMirnovFluxCorrected(optimP2[0],optimP2[1],[1.,1.],optimP2[2][1],optimP2[3],biotSavart=False)*i*optimP2[2][0]*1e6
     P3=getMirnovFluxCorrected(optimP3[0],optimP3[1],[1.,1.],optimP3[2][1],optimP3[3],biotSavart=False)*i*optimP3[2][0]*1e6
