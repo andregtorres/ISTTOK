@@ -5,10 +5,10 @@ from StartSdas import StartSdas
 client = StartSdas()
 
 #signal + time
-def getSignal(channelID, shotNr):
+def getSignal(channelID, shotNr, gain=1.):
     signalStructArray=client.getData(channelID,'0x0000', shotNr)
     signalStruct=signalStructArray[0]
-    signal=signalStruct.getData()
+    signal=signalStruct.getData()*gain
     tstart = signalStruct.getTStart()
     tend = signalStruct.getTEnd()
     #Calculate the time between samples
