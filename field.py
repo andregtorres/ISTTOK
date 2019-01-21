@@ -62,6 +62,35 @@ def getMirnovFlux(Rw_,Zw_,polarity,windings,biotSavart=True):
     Hp=-Hr*np.sin(np.radians(angle))+Hz*np.cos(np.radians(angle))
     return Hp*windings*50*49e-6
 
+#magnetic flux per unit area a set of PF coil at Rw_, Zw_ (array) with windings and polarity creates on the positions r,z
+# coordinates in [m]
+def getPFFlux(r,z,Rw_,Zw_,polarity,windings):
+    #loop on the PFCs
+    Hr=0
+    Hz=0
+    for Rw,Zw, sign in zip(Rw_,Zw_,polarity):
+        coilHr, coilHz= Hcoil(r, z, Rw,Zw)
+        Hr+=sign*coilHr
+        Hz+=sign*coilHz
+    return Hr*windings, Hz*windings
+#assuming input as array
+def getPFFlux2(r,z,PF, biotSavart=False):
+    Rw_=PF[0]
+    Zw_=PF[1]
+    polarity=PF[2]
+    windings=PF[3]
+    #loop on the PFCs
+    Hr=0
+    Hz=0
+    for Rw,Zw, sign in zip(Rw_,Zw_,polarity):
+        if not biotSavart:
+            coilHr, coilHz= Hcoil(r, z, Rw,Zw)
+        else:
+            coilHr, coilHz=biotsavart(r, z, Rw,Zw,1.0)
+        Hr+=sign*coilHr
+        Hz+=sign*coilHz
+    return Hr*windings, Hz*windings
+
 def getMirnovFluxCorrected(Rw_,Zw_,polarity,windings,correction,biotSavart=True):
     #mirnov positions
     radius=9.35 #cm
@@ -90,54 +119,3 @@ def getMirnovFluxCorrected(Rw_,Zw_,polarity,windings,correction,biotSavart=True)
 #get the mirnov flat top value with heaviside shots
 def flatTops (data,from_=4000, to_=6000):
     return np.asarray([np.mean(np.array(i)[from_:to_]) for i in data])
-
-
-
-'''
-R=np.linspace(30,60, 20)
-Z=np.linspace(-10,10, 20)
-Br=np.zeros(shape=(20,20))
-Bz=np.zeros(shape=(20,20))
-
-for Rw,Zw, sign in zip([58.,58.,35.,35.],[-7.,7.,-7.,7.],[-1.,-1.,1.,1.]):
-    for i in range(20):
-        print i
-        for j in range(20):
-            br,bz=biotsavart(R[i]*1e-2, Z[j]*1e-2, Rw*1e-2,Zw*1e-2,340*sign) #46.
-            Br[i][j] = Br[i][j] + br
-            Bz[i][j] = Bz[i][j] + bz
-
-
-Br2=np.zeros(shape=(20,20))
-Bz2=np.zeros(shape=(20,20))
-for Rw,Zw, sign in zip([58.,58.,35.,35.],[-7.,7.,-7.,7.],[-1.,-1.,1.,1.]):
-    for i in range(20):
-        print i
-        for j in range(20):
-            br2,bz2 =Hcoil(R[i]*1e-2, Z[j]*1e-2, Rw*1e-2,Zw*1e-2) #46.
-            Br2[i][j] = Br2[i][j] + br2*340*sign
-            Bz2[i][j] = Bz2[i][j] + bz2*340*sign
-
-Br3=np.zeros(shape=(20,20))
-Bz3=np.zeros(shape=(20,20))
-for Rw,Zw, sign in zip([58.,58.,35.,35.],[-7.,7.,-7.,7.],[-1.,-1.,1.,1.]):
-    for i in range(20):
-        print i
-        for j in range(20):
-            br3,bz3=biotSavartCyl(R[i]*1e-2, Z[j]*1e-2, Rw*1e-2,Zw*1e-2,340.*sign) #46.
-            Br3[i][j] = Br3[i][j] + br3
-            Bz3[i][j] = Bz3[i][j] + bz3
-print Bz
-print Bz2*mu_0
-import matplotlib.pyplot as plt
-print Bz2*mu_0
-plt.contourf(R,Z,Bz2*mu_0, levels=np.linspace(-1e-2,0,200))
-plt.plot(Bz[10]*1000)
-plt.plot(Bz2[10]*mu_0*1000)
-plt.contourf(R,Z,np.sqrt(Bz**2+Br**2))#, levels=np.linspace(-1e-2,0,200)
-plt.quiver(Br2,Bz2)
-
-plt.plot(Z,np.sqrt(Br**2+Bz**2)*1000)
-plt.plot(Z,Br*1000)
-plt.plot(Z,Bz*1000)
-'''
