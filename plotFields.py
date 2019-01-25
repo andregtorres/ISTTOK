@@ -7,7 +7,11 @@ from coilDefinitions import PF0, PF1, PF2, v, ht, hb
 import matplotlib.pyplot as plt
 import numpy as np
 
+<<<<<<< HEAD
 #%matplotlib qt4
+=======
+%matplotlib qt4
+>>>>>>> e2761a0bad5346fc8b93f67684dcc2c0a49829ff
 
 def plotPF(PF, title ="", probes=True):
     nr=50
@@ -52,6 +56,9 @@ plotPF(PF0[2],"Horizontal, PF0")
 plotPF(PF0[0],"Primary", False)
 plotPF(PF0[1],"Vertical PF", False)
 plotPF(PF0[2],"Horizontal PF", False)
+<<<<<<< HEAD
 
 if __name__ == '__main__':
     plt.show()
+=======
+>>>>>>> e2761a0bad5346fc8b93f67684dcc2c0a49829ff
