@@ -98,58 +98,6 @@ class tripleCoil:
             self.ht.setSignals2(gains_ht,*currents_m[1])
             self.hb.setSignals2(gains_hb,*currents_m[2])
 
-
-    def getPFcontribution(self, activeCoils, amplify=False, applyFilter=False, PFset=0):
-        tbs=100.
-        if activeCoils == "P":
-            ratiosPF0=np.asarray([1.12773403, 0.39033158, 1.40338548])
-            ratiosPF1=np.asarray([1.46461457, 0.38986613, 1.401712  ])
-            popt=[[7.89588047e-05, 2.43622814e+04, 6.55629815e-05],[-2.06196145e-06,  4.38844884e+04, -1.60822894e-06],[-8.12553610e-06,  1.27860286e+04, -6.02436304e-06]]
-
-        if activeCoils == "V":
-            ratiosPF0=np.asarray([0.22671773, 0.12373415, 0.17530242])
-            ratiosPF1=np.asarray([0.60805321, 0.9006564 , 1.27601997])
-            popt=[[-7.61731222e-03,  3.73277163e+04, -3.64464177e-05], [ 1.05060429e-04,  3.97652858e+04, -9.12632314e-07], [-4.73349226e-05,  6.12193708e+04, -1.29608285e-06]]
-
-        if activeCoils == "H":
-            ratiosPF0=np.asarray([-679.90646268,    1.26493285,    1.1025751 ])
-            ratiosPF1=np.asarray([2.31107756, 1.51265111, 1.31849802])
-            popt=[[-2.53755150e-02,  2.28065608e+04, -7.28439496e-06],[7.30941300e+05, 8.05266976e+03, 2.64429245e-05],[1.66489804e+06, 7.74906454e+03, 2.30214087e-05]]
-
-        if amplify:
-            if PFset == 0:
-                amplified=(np.asarray([self.v.PF0,self.hb.PF0,self.hb.PF0]).T*ratiosPF0).T
-            if PFset == 1:
-                amplified=(np.asarray([self.v.PF1,self.hb.PF1,self.hb.PF1]).T*ratiosPF1).T
-        else:
-            if PFset == 0:
-                amplified=np.asarray([self.v.PF0,self.hb.PF0,self.hb.PF0])
-            if PFset == 1:
-                amplified=np.asarray([self.v.PF1,self.hb.PF1,self.hb.PF1])
-
-        filtered=[[],[],[]]
-        if applyFilter:
-            for i in range(3):
-                fc1=1./popt[i][1]/2./np.pi
-                filtered[i]=np.asarray(CSfilter(amplified[i],fc1, tbs))
-        else:
-            filtered=amplified
-        return filtered
-
-    def setPFcontributions(self,amplify=False, applyFilter=False,PFset=0):
-        for current in ["P","V","H"]:
-            filtered=self.getPFcontribution(current, amplify, applyFilter,PFset)
-            if current=="P":
-                self.PFcontribution=filtered
-            else:
-                for i in range(3):
-                    self.PFcontribution[i]=self.PFcontribution[i]+filtered[i]
-
-
-#v=diagCoil(r=0.706, z=0.0,l=0.18483,w=0.033, turns=10,angle=0)
-#ht=diagCoil(r=0.7145, z=zhor*1e-3,l=0.15587971881874357,w=whor*1e-3, turns=10,angle=-90)
-#hb=diagCoil(r=0.7145, z=-zhor*1e-3,l=0.15587971881874357,w=whor*1e-3, turns=10,angle=-90)
-
 v=diagCoil(r=0.706, z=0.0,l=0.18483,w=0.028, turns=10,angle=0)
 ht=diagCoil(r=0.7145, z=0.014,l=0.15588,w=0.014, turns=10,angle=-90)
 hb=diagCoil(r=0.7145, z=-0.014,l=0.15588,w=0.014, turns=10,angle=-90)
